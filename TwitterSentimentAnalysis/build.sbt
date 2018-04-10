@@ -10,5 +10,5 @@ libraryDependencies ++= Seq(
 "joda-time" % "joda-time" % "2.1",
 "org.joda" % "joda-convert" % "1.8.1")
 
-libraryDependencies += "edu.stanford.nlp" % "stanford-corenlp" % "3.5.1"
-libraryDependencies += "edu.stanford.nlp" % "stanford-corenlp" % "3.5.1" classifier "models"
+libraryDependencies += "edu.stanford.nlp" % "stanford-corenlp" % "3.9.1"
+libraryDependencies += "edu.stanford.nlp" % "stanford-corenlp" % "3.9.1" classifier "models"
