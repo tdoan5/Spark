@@ -67,7 +67,7 @@ object SentimentAnalysis {
            "retweet" -> t.getRetweetCount,
            "sentiment" -> SentimentAnalysisUtils.detectSentiment(t.getText).toString
          )
-       }).saveToEs("twitter_041718/tweet")
+       }).saveAsTextFiles("twitter_041718/tweet")
      }
      
 
