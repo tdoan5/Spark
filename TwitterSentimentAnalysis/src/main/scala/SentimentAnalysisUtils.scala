@@ -16,7 +16,7 @@ object SentimentAnalysisUtils {
     props
   }
 
-  def detectSentiment(message: String): SENTIMENT_TYPE = {
+  def detectSentiment(message: String): String = {
 
     val pipeline = new StanfordCoreNLP(nlpProps)
 
