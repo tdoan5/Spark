@@ -62,7 +62,7 @@ object SentimentAnalysis {
            "hashtags" -> t.getHashtagEntities.map(_.getText),
            "retweet" -> t.getRetweetCount,
            "language" -> t.getLang.toString(),
-           "sentiment" -> detectSentiment(t.getText).toString
+           "sentiment" -> SentimentAnalysisUtils.detectSentiment(t.getText).toString
          )
        }).saveToEs("twitter_041718/tweet")
      }
