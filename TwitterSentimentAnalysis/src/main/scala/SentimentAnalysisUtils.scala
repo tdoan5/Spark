@@ -40,8 +40,8 @@ object SentimentAnalysisUtils {
       sentiments += sentiment.toDouble
       sizes += partText.length
 
-      println("debug: " + sentiment)
-      println("size: " + partText.length)
+      //println("debug: " + sentiment)
+      //println("size: " + partText.length)
 
     }
 
@@ -59,9 +59,9 @@ object SentimentAnalysisUtils {
     }
 
 
-    println("debug: main: " + mainSentiment)
-    println("debug: avg: " + averageSentiment)
-    println("debug: weighted: " + weightedSentiment)
+    //println("debug: main: " + mainSentiment)
+    //println("debug: avg: " + averageSentiment)
+    //println("debug: weighted: " + weightedSentiment)
 
     /*
      0 -> very negative
@@ -73,11 +73,11 @@ object SentimentAnalysisUtils {
     weightedSentiment match {
       case s if s <= 0.0 => NOT_UNDERSTOOD
       case s if s < 1.0 => VERY_NEGATIVE
-      case s if s < 2.0 => NEGATIVE
-      case s if s < 3.0 => NEUTRAL
-      case s if s < 4.0 => POSITIVE
-      case s if s < 5.0 => VERY_POSITIVE
-      case s if s > 5.0 => NOT_UNDERSTOOD
+      case s if s < 1.5 => NEGATIVE
+      case s if s < 2.0 => NEUTRAL
+      case s if s < 2.5 => POSITIVE
+      case s if s < 3.0 => VERY_POSITIVE
+      case s if s > 3.0 => NOT_UNDERSTOOD
     }
 
   }
