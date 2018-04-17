@@ -29,9 +29,10 @@ object SentimentAnalysis {
     StreamingExamples.setStreamingLogLevels()
 
     val Array(consumerKey, consumerSecret, accessToken, accessTokenSecret) = args.take(4)
+    
     val filters = args.takeRight(args.length - 4)
     
-    val keyword = filters(0)
+    //val filters = Array("dogs", "cats")
    
     // Set the system properties so that Twitter4j library used by twitter stream
     // can use them to generat OAuth credentials
@@ -45,36 +46,34 @@ object SentimentAnalysis {
     val ssc = new StreamingContext(sparkConf, Seconds(5))
     val stream = TwitterUtils.createStream(ssc, None, filters)
 
-  val tags = stream.flatMap { status => status.getHashtagEntities.map(_.getText)}
+    val tags = stream.flatMap { status => status.getHashtagEntities.map(_.getText)}
 
-tags.countByValue()
-   .foreachRDD { rdd =>
-       val now = org.joda.time.DateTime.now()
-       rdd
-         .sortBy(_._2)
-         .map(x => (x, now))
-         .saveAsTextFile(s"./twitter/$now")
+    tags.countByValue().foreachRDD { 
+     rdd => val now = org.joda.time.DateTime.now()
+     rdd.sortBy(_._2)
+        .map(x => (x, now))
+        .saveAsTextFile(s"./twitter/$now")
      }
 
-val tweets = stream.filter {t =>
-     val tags = t.getText.split(" ").filter(_.startsWith(keyword)).map(_.toLowerCase)
-     tags.exists { x => true }
-}
+    val tweets = stream.filter {t =>
+         val tags = t.getText.split(" ").filter(_.startsWith("#")).map(_.toLowerCase)
+         tags.exists { x => true }
+    }
    
 
-val data = tweets.map { status =>
-   val sentiment = SentimentAnalysisUtils.detectSentiment(status.getText)
-  
-   val tagss = status.getHashtagEntities.map(_.getText.toLowerCase)
+    val data = tweets.map { status =>
+       val sentiment = SentimentAnalysisUtils.detectSentiment(status.getText)
 
-  (status.getText, sentiment.toString, tagss.toString())
-   
-    
-}    
-data.print()
-data.saveAsTextFiles("./saveddata/") 
+       val tagss = status.getHashtagEntities.map(_.getText.toLowerCase)
 
-ssc.start()
+      (status.getText, sentiment.toString, tagss.toString())
+
+
+    }    
+    data.print()
+    data.saveAsTextFiles("./saveddata/") 
+
+    ssc.start()
     ssc.awaitTermination()
 
   }
