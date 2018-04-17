@@ -44,37 +44,33 @@ object SentimentAnalysis {
     val sparkConf = new SparkConf().setAppName("Twitter").setMaster("local[2]")
     // val sc = new SparkContext(sparkConf)
     val ssc = new StreamingContext(sparkConf, Seconds(5))
-    val stream = TwitterUtils.createStream(ssc, None, filters)
+    val tweets = TwitterUtils.createStream(ssc, None, filters)
 
-    val tags = stream.flatMap { status => status.getHashtagEntities.map(_.getText)}
+     tweets.print()
 
-    tags.countByValue().foreachRDD { 
-     rdd => val now = org.joda.time.DateTime.now()
-     rdd.sortBy(_._2)
-        .map(x => (x, now))
-        .saveAsTextFile(s"./twitter/$now")
+     /* Extract required columns from json object and also generate sentiment score for each tweet.
+      * RDD can be saved into elasticsearch as long as the content can be translated to a document.
+      * So each RDD should be transformed to a Map before storing in elasticsearch index twitter_082717/tweet.
+      */
+     tweets.foreachRDD{(rdd, time) =>
+       rdd.map(t => {
+         Map(
+           "user"-> t.getUser.getScreenName,
+           "created_at" -> t.getCreatedAt.getTime.toString,
+           "location" -> Option(t.getGeoLocation).map(geo => { s"${geo.getLatitude},${geo.getLongitude}" }),
+           "text" -> t.getText,
+           "hashtags" -> t.getHashtagEntities.map(_.getText),
+           "retweet" -> t.getRetweetCount,
+           "language" -> t.getLang.toString(),
+           "sentiment" -> detectSentiment(t.getText).toString
+         )
+       }).saveToEs("twitter_041718/tweet")
      }
+     
 
-    val tweets = stream.filter {t =>
-         val tags = t.getText.split(" ").filter(_.startsWith("#")).map(_.toLowerCase)
-         tags.exists { x => true }
-    }
-   
+     ssc.start()
+     ssc.awaitTermination()
 
-    val data = tweets.map { status =>
-       val sentiment = SentimentAnalysisUtils.detectSentiment(status.getText)
-
-       val tagss = status.getHashtagEntities.map(_.getText.toLowerCase)
-
-      (status.getText, sentiment.toString, tagss.toString())
-
-
-    }    
-    data.print()
-    data.saveAsTextFiles("./saveddata/") 
-
-    ssc.start()
-    ssc.awaitTermination()
 
   }
 
