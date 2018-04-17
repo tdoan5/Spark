@@ -66,9 +66,9 @@ object SentimentAnalysisUtils {
     /*
      0 -> very negative
      1 -> negative
-     2 -> neutral
-     3 -> positive
-     4 -> very positive
+     1.5 -> neutral
+     2 -> positive
+     2.5 -> very positive
      */
     weightedSentiment match {
       case s if s <= 0.0 => NOT_UNDERSTOOD
