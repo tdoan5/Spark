@@ -9,6 +9,9 @@ import org.apache.spark.rdd._
 import org.apache.spark.rdd.RDD
 import org.apache.spark.SparkContext._
 import org.apache.spark.sql
+import java.util.Date
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 
 import org.apache.spark.storage.StorageLevel
@@ -16,6 +19,7 @@ import scala.io.Source
 import scala.collection.mutable.HashMap
 import java.io.File
 
+import scala.util.Try
 
 object SentimentAnalysis {
  
