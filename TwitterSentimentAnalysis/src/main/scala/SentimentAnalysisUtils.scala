@@ -26,68 +26,37 @@ object SentimentAnalysisUtils {
 
     var longest = 0
     var mainSentiment = 0
-
-    for (sentence <- annotation.get(classOf[CoreAnnotations.SentencesAnnotation])) {
-      val tree = sentence.get(classOf[SentimentCoreAnnotations.SentimentAnnotatedTree])
-      val sentiment = RNNCoreAnnotations.getPredictedClass(tree)
-      val partText = sentence.toString
+    
+    // An Annotation is a Map and you can get and use the various analyses individually.
+    // For instance, this gets the parse tree of the first sentence in the text.
+    // Iterate through tweet
+    for (tweetMsg <- annotation.get(classOf[CoreAnnotations.SentencesAnnotation])) {
+      // Create a RNN parse tree
+      val parseTree = tweetMsg.get(classOf[SentimentCoreAnnotations.SentimentAnnotatedTree])
+      // Detect Sentiment
+      val tweetSentiment = RNNCoreAnnotations.getPredictedClass(parseTree)
+      val partText = tweetMsg.toString
 
       if (partText.length() > longest) {
-        mainSentiment = sentiment
+        mainSentiment = tweetSentiment
         longest = partText.length()
       }
 
-      sentiments += sentiment.toDouble
+      sentiments += tweetSentiment.toDouble
       sizes += partText.length
-
-      //println("debug: " + sentiment)
-      //println("size: " + partText.length)
-
-    }
-
-    val averageSentiment:Double = {
-      if(sentiments.size > 0) sentiments.sum / sentiments.size
-      else -1
     }
 
     val weightedSentiments = (sentiments, sizes).zipped.map((sentiment, size) => sentiment * size)
     var weightedSentiment = weightedSentiments.sum / (sizes.fold(0)(_ + _))
 
-    if(sentiments.size == 0) {
-      mainSentiment = -1
-      weightedSentiment = -1
-    }
-
-
-    //println("debug: main: " + mainSentiment)
-    //println("debug: avg: " + averageSentiment)
-    //println("debug: weighted: " + weightedSentiment)
-
-    /*
-     0 -> very negative
-     1 -> negative
-     1.5 -> neutral
-     2 -> positive
-     2.5 -> very positive
-     */
-    weightedSentiment match {
-      case s if s <= 0.0 => NOT_UNDERSTOOD
-      case s if s < 1.0 => VERY_NEGATIVE
-      case s if s < 1.5 => NEGATIVE
-      case s if s < 2.0 => NEUTRAL
-      case s if s < 2.5 => POSITIVE
-      case s if s < 3.0 => VERY_POSITIVE
-      case s if s > 3.0 => NOT_UNDERSTOOD
-    }
-
+    if (weightedSentiment <= 0.0)
+      "NOT_UNDERSTOOD"
+    else if (weightedSentiment < 1.6)
+      "NEGATIVE"
+    else if (weightedSentiment <= 2.0)
+      "NEUTRAL"
+    else if (weightedSentiment < 5.0)
+      "POSITIVE"
+    else "NOT_UNDERSTOOD"    
   }
-
-  trait SENTIMENT_TYPE
-  case object VERY_NEGATIVE extends SENTIMENT_TYPE
-  case object NEGATIVE extends SENTIMENT_TYPE
-  case object NEUTRAL extends SENTIMENT_TYPE
-  case object POSITIVE extends SENTIMENT_TYPE
-  case object VERY_POSITIVE extends SENTIMENT_TYPE
-  case object NOT_UNDERSTOOD extends SENTIMENT_TYPE
-
 }
